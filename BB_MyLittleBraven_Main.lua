@@ -31,7 +31,7 @@ local function addAndWearItem(inventory, character, itemType)
     return nil
 end
 
-local onGameStart = function()
+local function spawnBraven()
     local playerObj = getPlayer()
     local playerSq = playerObj:getSquare()
 
@@ -48,12 +48,14 @@ local onGameStart = function()
         fasterHealing = true,
         noNeeds = true,
         isEssential = true,
-        aimSpeedMultiplier = 0.7,
+        aimSpeedMultiplier = 0.5,
         dialogueStringPrefix = "IGUI_MyLittleBraven_",
     }
 
     MyLittleBraven.npc = BB_NPCFramework.CreateNPC(MyLittleBraven, braven_parameters)
-    local setupStatus = BB_NPCFramework.SubscribeNPCToAllModules(MyLittleBraven)
+
+    local modules = { true, true, true, SandboxVars.BB_MyLittleBraven.CloseDoors, true, true, true, true, true, true }
+    local setupStatus = BB_NPCFramework.SubscribeNPCToModules(MyLittleBraven, modules)
 
     if setupStatus == "CUSTOMIZE" then
         local inventory = MyLittleBraven.npc:getInventory()
@@ -79,4 +81,18 @@ local onGameStart = function()
     end
 end
 
+local onGameStart = function()
+    spawnBraven()
+end
+
 Events.OnGameStart.Add(onGameStart)
+
+local function onCharacterDeath(character)
+    if character ~= MyLittleBraven.npc then return end
+
+    MyLittleUtils.DelayFunction(function()
+        spawnBraven()
+    end, 1800, true)
+end
+
+Events.OnCharacterDeath.Add(onCharacterDeath)
